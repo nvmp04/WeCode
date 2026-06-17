@@ -12,7 +12,6 @@ export function useEnrollment(course: CourseDetail) {
   const { enroll, isEnrolled } = useEnrollmentStore();
 
   const enrolled = isEnrolled(course.id);
-
   // Lấy lessonId đầu tiên của section đầu tiên
   const firstLessonId = course.sections[0]?.lessons[0]?.id;
 

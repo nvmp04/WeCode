@@ -3,25 +3,33 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authService } from '../services/authService';
 import { useAuthStore } from '../store/authStore';
 import { LoginPayload, RegisterPayload } from '../types';
+import { apiClient } from '@/shared/lib/axios';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { setUser, logout, user, isAuthenticated } = useAuthStore();
+  const store = useAuthStore();
   const router = useRouter();
+
+  const fetchAndSetUser = async (token: string) => {
+    const res = await apiClient.get('/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    store.setToken(token);
+    store.setUser(res.data);
+  };
 
   const login = async (payload: LoginPayload) => {
     try {
       setLoading(true);
       setError(null);
-      const user = await authService.login(payload);
-      setUser(user);
+      const res = await apiClient.post('/auth/login', payload);
+      await fetchAndSetUser(res.data.access_token);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message ?? 'Đăng nhập thất bại');
     } finally {
       setLoading(false);
     }
@@ -34,35 +42,34 @@ export function useAuth() {
       if (payload.password !== payload.confirmPassword) {
         throw new Error('Mật khẩu xác nhận không khớp');
       }
-      const user = await authService.register(payload);
-      setUser(user);
+      const res = await apiClient.post('/auth/register', payload);
+      await fetchAndSetUser(res.data.access_token);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const googleLogin = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Mock: giả lập Google trả về user
-      // Sau này: signIn('google') từ NextAuth
-      await new Promise((r) => setTimeout(r, 800));
-      setUser({
-        id: 'google-1',
-        name: 'Google User',
-        email: 'google@gmail.com',
-        avatar: 'https://lh3.googleusercontent.com/a/default',
-      });
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message ?? 'Đăng ký thất bại');
     } finally {
       setLoading(false);
     }
   };
 
-  return { login, register, googleLogin, logout, user, isAuthenticated, loading, error };
+  const googleLogin = () => {
+    // Redirect thẳng sang BE — không cần mock nữa
+    window.location.href = 'http://localhost:3001/api/auth/google';
+  };
+
+  const logout = () => {
+    store.logout();
+    router.push('/');
+  };
+
+  return {
+    login,
+    register,
+    googleLogin,
+    logout,
+    user: store.user,
+    isAuthenticated: store.isAuthenticated,
+    loading,
+    error,
+  };
 }

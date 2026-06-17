@@ -1,20 +1,23 @@
+// src/features/courses/containers/CoursesListContainer.tsx
 'use client';
 
-import { useCourses } from '../hooks/useCourses';
-import { CourseList } from '../components/CourseList';
-import { CourseFilter } from '../components/CourseFilter';
 import { useRouter } from 'next/navigation';
+import { useCourses } from '../hooks/useCourses';
+import { CourseFilter } from '../components/CourseFilter';
+import { CourseList } from '../components/CourseList';
 
 export function CoursesListContainer() {
-  const { courses, filters, setFilters } = useCourses();
   const router = useRouter();
+  const { courses, filters, setFilters, isLoading } = useCourses();
+
   return (
     <div>
-      <CourseFilter filters={filters} onChange={setFilters}/>
-      <CourseList 
+      <CourseFilter filters={filters} onChange={setFilters} />
+      <CourseList
         courses={courses}
+        isLoading={isLoading}
         onCourseClick={(slug) => router.push(`/courses/${slug}`)}
-       />
+      />
     </div>
   );
 }

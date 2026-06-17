@@ -1,4 +1,3 @@
-// src/shared/ui/Header.tsx
 'use client';
 
 import Link from 'next/link';
@@ -16,20 +15,34 @@ export function Header() {
   const { logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b">
+    <header className="sticky top-0 z-50 border-b border-[#30363d] bg-[#0d1117]/90 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="font-bold text-xl text-blue-600">
-          WeCode
+        <Link
+          href="/"
+          className="flex items-center gap-3 group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center justify-center text-[#58a6ff] font-bold text-sm transition-all group-hover:border-[#58a6ff]/50">
+            {'</>'}
+          </div>
+
+          <div>
+            <p className="font-semibold text-white leading-none">
+              WeCode
+            </p>
+            <p className="text-[10px] text-[#8b949e] font-mono">
+              build.future()
+            </p>
+          </div>
         </Link>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-2">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
+              className="px-4 py-2 rounded-xl text-sm text-[#8b949e] hover:text-white hover:bg-[#161b22] border border-transparent hover:border-[#30363d] transition-all"
             >
               {link.label}
             </Link>
@@ -39,46 +52,77 @@ export function Header() {
         {/* Auth */}
         <div className="flex items-center gap-3">
           {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard" className="text-sm text-gray-600 hover:text-blue-600">
+            <>
+              <Link
+                href="/dashboard"
+                className="hidden sm:flex px-4 py-2 rounded-xl text-sm text-[#8b949e] hover:text-white hover:bg-[#161b22] border border-transparent hover:border-[#30363d] transition-all"
+              >
                 Học của tôi
               </Link>
+
               <div className="relative group">
-                <button className="flex items-center gap-2">
+                <button className="flex items-center gap-3 rounded-xl border border-[#30363d] bg-[#161b22] px-2 py-1.5 hover:border-[#58a6ff]/40 transition-all">
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-8 h-8 rounded-lg object-cover"
+                    />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-[#58a6ff] text-white flex items-center justify-center text-sm font-bold">
                       {user.name[0].toUpperCase()}
                     </div>
                   )}
-                </button>
-                {/* Dropdown */}
-                <div className="absolute right-0 top-10 w-44 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <div className="px-4 py-2 border-b">
-                    <p className="text-sm font-medium truncate">{user.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm text-white leading-none max-w-[120px] truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-[11px] text-[#8b949e] font-mono truncate max-w-[120px]">
+                      user.active
+                    </p>
                   </div>
-                  <Link href="/dashboard" className="block px-4 py-2 text-sm hover:bg-gray-50">
+                </button>
+
+                {/* Dropdown */}
+                <div className="absolute right-0 top-14 w-56 rounded-2xl border border-[#30363d] bg-[#161b22] shadow-2xl opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#30363d]">
+                    <p className="text-sm font-medium text-white truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-[#8b949e] truncate">
+                      {user.email}
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-3 text-sm text-[#c9d1d9] hover:bg-[#0d1117] transition-colors"
+                  >
                     Dashboard
                   </Link>
+
                   <button
                     onClick={logout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-50"
+                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-[#0d1117] transition-colors"
                   >
-                    Đăng xuất
+                    logout()
                   </button>
                 </div>
               </div>
-            </div>
+            </>
           ) : (
             <>
-              <Link href="/login" className="text-sm text-gray-600 hover:text-blue-600">
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-xl text-sm text-[#8b949e] hover:text-white hover:bg-[#161b22] border border-transparent hover:border-[#30363d] transition-all"
+              >
                 Đăng nhập
               </Link>
+
               <Link
                 href="/register"
-                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-[#238636] text-white hover:bg-[#2ea043] transition-all hover:scale-[1.02]"
               >
                 Đăng ký
               </Link>

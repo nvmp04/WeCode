@@ -1,6 +1,7 @@
 // src/features/courses/containers/CourseDetailContainer.tsx
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCourseDetail } from '../hooks/useCourseDetail';
 import { useEnrollment } from '@/features/lessons/hooks/useEnrollment';
 import { CourseHero } from '../components/CourseHero';
@@ -8,22 +9,28 @@ import { CourseContentAccordion } from '../components/CourseContentAccordion';
 import { CourseSidebar } from '../components/CourseSidebar';
 
 export function CourseDetailContainer({ slug }: { slug: string }) {
-  const { course } = useCourseDetail(slug);
-  const enrollment = useEnrollment(course!);
+  const { course, isLoading } = useCourseDetail(slug);
 
+  if (isLoading) return <p className="p-10 text-center">Đang tải...</p>;
   if (!course) return <p className="p-10 text-center">Không tìm thấy khóa học.</p>;
+
+  return <CourseDetailContent course={course} />;
+}
+
+// Tách ra component riêng — chỉ render khi course đã có
+function CourseDetailContent({ course }: { course: any }) {
+  const router = useRouter();
+  const enrollment = useEnrollment(course);
 
   return (
     <>
       <CourseHero course={course} />
-
       <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Left */}
         <div className="lg:col-span-2 space-y-10">
           <section>
             <h2 className="text-xl font-bold mb-4">Bạn sẽ học được gì</h2>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {course.whatYouLearn.map((item, i) => (
+              {course.whatYouLearn.map((item: string, i: number) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span className="text-green-500 mt-0.5">✓</span>
                   <span>{item}</span>
@@ -35,7 +42,7 @@ export function CourseDetailContainer({ slug }: { slug: string }) {
           <section>
             <h2 className="text-xl font-bold mb-4">Yêu cầu</h2>
             <ul className="space-y-1">
-              {course.requirements.map((item, i) => (
+              {course.requirements.map((item: string, i: number) => (
                 <li key={i} className="flex gap-2 text-sm">
                   <span>•</span><span>{item}</span>
                 </li>
@@ -49,7 +56,6 @@ export function CourseDetailContainer({ slug }: { slug: string }) {
           </section>
         </div>
 
-        {/* Right — sidebar nhận enrollment */}
         <div className="lg:col-span-1">
           <CourseSidebar
             course={course}

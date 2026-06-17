@@ -2,33 +2,49 @@
 'use client';
 
 import { useState } from 'react';
-import { MOCK_COURSE_DETAIL, MOCK_LESSON_PROGRESS } from '@/features/courses/constants';
-import { Lesson, LessonTabType, LessonProgress } from '@/features/courses/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { lessonService } from '../services/lessonService';
+import { MOCK_COURSE_DETAIL } from '@/features/courses/constants';
+import { LessonTabType } from '../types';
 
 export function useLesson(courseSlug: string, lessonId: string) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<LessonTabType>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [progress, setProgress] = useState<LessonProgress[]>(MOCK_LESSON_PROGRESS);
 
+  // Lấy lesson content từ API
+  const { data: currentLesson, isLoading } = useQuery({
+    queryKey: ['lesson', lessonId],
+    queryFn: () => lessonService.getContent(lessonId),
+    enabled: !!lessonId,
+  });
+
+  // Lấy course detail để có sections/lessons list
+  // Tạm dùng mock, sau này dùng useCourseDetail
   const course = MOCK_COURSE_DETAIL;
   const allLessons = course.sections.flatMap((s) => s.lessons);
-  const currentLesson = allLessons.find((l) => l.id === lessonId) ?? allLessons[0];
-  const currentIndex = allLessons.indexOf(currentLesson);
+  const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
   const prevLesson = allLessons[currentIndex - 1] ?? null;
   const nextLesson = allLessons[currentIndex + 1] ?? null;
 
-  const markCompleted = (id: string) => {
-    setProgress((prev) =>
-      prev.map((p) => p.lessonId === id ? { ...p, completed: true } : p)
-    );
-  };
+  // Mark complete mutation
+  const { mutate: markCompleted } = useMutation({
+    mutationFn: (id: string) => lessonService.markComplete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['progress'] });
+    },
+  });
 
-  const isCompleted = (id: string) =>
-    progress.find((p) => p.lessonId === id)?.completed ?? false;
+  const navigateTo = (id: string) => {
+    router.push(`/learn/${courseSlug}/${id}`);
+  };
 
   return {
     course,
     currentLesson,
+    isLoading,
     prevLesson,
     nextLesson,
     activeTab,
@@ -36,6 +52,6 @@ export function useLesson(courseSlug: string, lessonId: string) {
     sidebarOpen,
     setSidebarOpen,
     markCompleted,
-    isCompleted,
+    navigateTo,
   };
 }
